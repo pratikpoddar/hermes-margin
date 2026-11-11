@@ -3,7 +3,6 @@
 **Comment `@hermes` on any highlighted text in Google Docs, Slides or Sheets, and Hermes answers right in the comment thread.**
 
 ![Margin demo](docs/demo.gif)
-<!-- GIF placeholder: record the 60-second demo in DEMO.md and save it as docs/demo.gif -->
 
 Margin is a [Hermes Agent](https://github.com/NousResearch/hermes-agent) gateway platform plugin. Every Google Drive comment thread becomes its own Hermes chat session: Hermes sees the whole document plus the text you highlighted, replies in the thread, remembers the thread when you follow up, and can put its suggested wording straight into the Doc when you reply `apply`.
 
