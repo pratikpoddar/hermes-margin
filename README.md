@@ -27,6 +27,7 @@ Margin is a [Hermes Agent](https://github.com/NousResearch/hermes-agent) gateway
    hermes gateway
    ```
    Highlight text in the doc and comment `@hermes make this clearer`.
+   If a gateway was already running before you installed Margin, run `hermes gateway restart` so it loads the plugin. Comments that existed before the first poll are skipped, so post a new one.
 
 ## How it works
 
