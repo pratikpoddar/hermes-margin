@@ -14,7 +14,7 @@ description: >
   "apply" puts Hermes's proposed wording into the Doc (or Slides deck).
 author: Tinkerer (Pratik Poddar)
 license: MIT
-homepage: https://github.com/OWNER/hermes-margin
+homepage: https://github.com/pratikpoddar/hermes-margin
 tags: [gateway, google-docs, google-slides, google-sheets, comments, writing]
 provides_tools: []
 provides_hooks: []

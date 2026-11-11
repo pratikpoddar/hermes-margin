@@ -13,7 +13,7 @@ Margin is a [Hermes Agent](https://github.com/NousResearch/hermes-agent) gateway
 2. **Enable the APIs.** In the same project enable the **Google Drive API**, **Google Docs API** and **Google Slides API**.
 3. **Install the plugin.**
    ```bash
-   hermes plugins install OWNER/hermes-margin --enable
+   hermes plugins install pratikpoddar/hermes-margin --enable
    ```
    Hermes asks for `MARGIN_GOOGLE_CLIENT_ID` and `MARGIN_GOOGLE_CLIENT_SECRET` (the Desktop client from step 1).
 4. **Sign in to Google, once, from a terminal.**

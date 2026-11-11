@@ -14,7 +14,7 @@ already watched, a terminal tiled next to the browser. Browser zoom 125%.
 | 0:37–0:47 | Type `apply` in the thread → sentence in the doc changes; Margin replies "Applied." | "Like it? Reply apply. Margin swaps the text, and only when it appears exactly once, so it never edits the wrong spot." |
 | 0:47–0:58 | Same thread: "Does that contradict anything else in the doc?" → Hermes answers referencing the ship-date line | "Follow-ups keep the thread's memory: each comment thread is its own Hermes session." |
 | 0:58–1:08 | New comment on "We will ship sometime later this year." with `@hermes turn this into a dated milestone list`; answer appears | "Every thread is independent. Works in Slides and Sheets comments too." |
-| 1:08–1:15 | README privacy section, then end card: "hermes plugins install OWNER/hermes-margin" | "Doc text goes only to your own model; nothing else leaves Google. Margin. Hermes, in the margins." |
+| 1:08–1:15 | README privacy section, then end card: "hermes plugins install pratikpoddar/hermes-margin" | "Doc text goes only to your own model; nothing else leaves Google. Margin. Hermes, in the margins." |
 
 **Tips:** set `MARGIN_POLL_INTERVAL=3` for the recording so replies land quickly; use a fast
 model; record at 1080p and trim the waits; export a 10–15 s GIF of 0:15–0:47 as `docs/demo.gif`.

@@ -1,6 +1,6 @@
 # DRAFT: Add Margin to the plugin catalog
 
-> Not submitted. Before opening: push the repo to `OWNER/hermes-margin`, pin the release commit in
+> Not submitted. Before opening: push the repo to `pratikpoddar/hermes-margin`, pin the release commit in
 > `plugin-catalog/margin.yaml` (`sha`), replace `OWNER`, and run
 > `hermes plugins validate . --install-deps` at that commit.
 
@@ -18,7 +18,7 @@ block), the user can reply `apply` and Margin replaces the highlighted text thro
 (`documents.batchUpdate`) or Slides (`presentations.batchUpdate`) `replaceAllText` with
 `matchCase`, only when the text occurs exactly once; otherwise it explains why nothing changed.
 
-Repo: https://github.com/OWNER/hermes-margin · MIT · author Tinkerer (Pratik Poddar)
+Repo: https://github.com/pratikpoddar/hermes-margin · MIT · author Tinkerer (Pratik Poddar)
 
 ## Hermes surfaces used
 

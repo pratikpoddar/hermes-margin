@@ -103,7 +103,7 @@ def register(ctx) -> None:
         ("display_tier", "minimal"),
         ("allowlist_suppresses_pairing", True),
         ("config_connected_fn", _client_id_configured),
-        ("docs_url", "https://github.com/OWNER/hermes-margin#readme"),
+        ("docs_url", "https://github.com/pratikpoddar/hermes-margin#readme"),
     ):
         if key in known:
             kwargs[key] = value
