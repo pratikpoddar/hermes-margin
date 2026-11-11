@@ -345,9 +345,11 @@ class MarginAdapter(BasePlatformAdapter):
             message = "This comment isn't attached to highlighted text, so there's nothing to replace."
         elif not proposal:
             message = "There's no proposed replacement in this thread yet. Ask me for new wording first."
+        elif "\n" in quoted.strip() and mime == MIME_DOC:
+            message = await self._apply_doc_range(file_id, comment_id, thread, quoted, proposal)
         elif "\n" in quoted.strip():
-            message = ("The highlighted text spans more than one paragraph, which Margin can't replace "
-                       "safely. Nothing was changed; please paste the suggestion by hand.")
+            message = ("The highlighted text spans more than one paragraph, which Margin can only replace "
+                       "in Google Docs. Nothing was changed; please paste the suggestion by hand.")
         else:
             doc_text = await self._doc_text(file_id, mime)
             count = logic.count_occurrences(doc_text, quoted)
@@ -374,6 +376,28 @@ class MarginAdapter(BasePlatformAdapter):
                     message = f"Applied, but Google replaced {changed} occurrences."
         await self._say(file_id, comment_id, message)
         return message
+
+    async def _apply_doc_range(self, file_id: str, comment_id: str, thread: dict,
+                               quoted: str, proposal: str) -> str:
+        """Multi-paragraph apply for Docs: find the quote's exact index range, then delete + insert."""
+        try:
+            document = await self._call(self.client.get_document, file_id)
+            count, span = logic.find_unique_range(document, quoted)
+        except GoogleAPIError as exc:
+            return f"Google refused to read the document ({exc}). Nothing was changed."
+        if count == 0:
+            return ("The highlighted text no longer appears exactly as quoted (it may have been "
+                    "edited), so nothing was changed.")
+        if count > 1 or not span:
+            return (f"The highlighted text appears {count} times in the document. Margin only "
+                    "replaces text that occurs exactly once, so nothing was changed.")
+        try:
+            await self._call(self.client.docs_replace_range, file_id, span[0], span[1], proposal)
+        except GoogleAPIError as exc:
+            return f"Google refused the edit ({exc}). Nothing was changed."
+        thread.update(quoted=proposal, proposal=None, applied=_now())
+        self.store.save_thread(file_id, comment_id, thread)
+        return "Applied. The highlighted paragraphs now read the proposed replacement."
 
     # -- outbound --------------------------------------------------------------------------
     def _comment_for(self, reply_to: Optional[str], metadata: Optional[dict]) -> Optional[str]:

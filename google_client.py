@@ -191,6 +191,18 @@ class GoogleClient:
         return _occurrences_changed(data)
 
 
+    def get_document(self, document_id: str) -> dict:
+        return self.request("GET", f"{DOCS}/documents/{quote(document_id)}")
+
+    def docs_replace_range(self, document_id: str, start: int, end: int, replace: str) -> dict:
+        """Delete [start, end) and insert ``replace`` there, in one atomic batchUpdate."""
+        requests: list[dict] = [{"deleteContentRange": {"range": {"startIndex": start, "endIndex": end}}}]
+        if replace:
+            requests.append({"insertText": {"location": {"index": start}, "text": replace}})
+        return self.request("POST", f"{DOCS}/documents/{quote(document_id)}:batchUpdate",
+                            {"requests": requests})
+
+
 def _occurrences_changed(data: Any) -> int:
     try:
         return int(data["replies"][0]["replaceAllText"].get("occurrencesChanged", 0))

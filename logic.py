@@ -120,3 +120,54 @@ def render_reply(content: str, *, proposal: Optional[str], can_apply: bool) -> s
     text = re.sub(r"\*\*(.+?)\*\*", r"\1", text)
     text = re.sub(r"^#{1,6}\s+", "", text, flags=re.MULTILINE)
     return f"{BOT_MARKER}: {text.strip()}"
+
+
+# -- Docs structure -> plain text with UTF-16 indices (for multi-paragraph apply) -----------------
+_SOFT_BREAKS = str.maketrans({"\u000b": "\n", "\u2029": "\n", "\u2028": "\n"})
+
+
+def docs_text_with_indices(document: dict) -> tuple[str, list[int]]:
+    """Flatten a Docs ``documents.get`` body into text, plus the document index of every character.
+
+    Docs indices count UTF-16 code units, so a character outside the BMP (most emoji) takes two.
+    Tables are walked cell by cell. Soft line breaks become ``\n`` so they match Drive's quote.
+    """
+    chars: list[str] = []
+    indices: list[int] = []
+
+    def walk(content):
+        for element in content or []:
+            para = element.get("paragraph")
+            if para:
+                for run in para.get("elements") or []:
+                    text_run = run.get("textRun")
+                    if not text_run or "startIndex" not in run:
+                        continue
+                    index = int(run["startIndex"])
+                    for ch in text_run.get("content") or "":
+                        chars.append(ch)
+                        indices.append(index)
+                        index += 2 if ord(ch) > 0xFFFF else 1
+            table = element.get("table")
+            if table:
+                for row in table.get("tableRows") or []:
+                    for cell in row.get("tableCells") or []:
+                        walk(cell.get("content"))
+
+    walk((document.get("body") or {}).get("content"))
+    return "".join(chars).translate(_SOFT_BREAKS), indices
+
+
+def find_unique_range(document: dict, needle: str) -> tuple[int, Optional[tuple[int, int]]]:
+    """Return (occurrences, (startIndex, endIndex) when exactly one) for ``needle`` in a Doc."""
+    needle = (needle or "").translate(_SOFT_BREAKS)
+    text, indices = docs_text_with_indices(document)
+    if not needle:
+        return 0, None
+    count = text.count(needle)
+    if count != 1:
+        return count, None
+    pos = text.index(needle)
+    last = pos + len(needle) - 1
+    end = indices[last] + (2 if ord(text[last]) > 0xFFFF else 1)
+    return 1, (indices[pos], end)

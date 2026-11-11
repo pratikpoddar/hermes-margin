@@ -70,6 +70,16 @@ class FakeGoogle:
     def find_comment(self, comment_id, file_id=DOC_ID):
         return next(c for c in self.comments[file_id] if c["id"] == comment_id)
 
+    def document(self, file_id):
+        """A Docs ``documents.get`` body: one paragraph per line, indices in UTF-16 units from 1."""
+        content, index = [], 1
+        for line in self.text[file_id].splitlines(keepends=True):
+            n = len(line.encode("utf-16-le")) // 2
+            content.append({"startIndex": index, "endIndex": index + n, "paragraph": {"elements": [
+                {"startIndex": index, "endIndex": index + n, "textRun": {"content": line}}]}})
+            index += n
+        return {"body": {"content": [{"endIndex": 1, "sectionBreak": {}}] + content}}
+
     def bot_replies(self, comment):
         return [r for r in comment["replies"] if r["author"].get("bot")]
 
@@ -108,7 +118,18 @@ class FakeGoogle:
             reply["content"] = body["content"]
             reply["modifiedTime"] = comment["modifiedTime"] = self._ts()
             return ok({"id": reply["id"], "content": reply["content"]})
+        m = re.fullmatch(r"/v1/documents/([^/:]+)", path)
+        if m and method == "GET":
+            return ok(self.document(m.group(1)))
         m = re.fullmatch(r"/v1/(?:documents|presentations)/([^/:]+):batchUpdate", path)
+        if m and "deleteContentRange" in body["requests"][0]:
+            text = self.text[m.group(1)]
+            rng = body["requests"][0]["deleteContentRange"]["range"]
+            units = text.encode("utf-16-le")
+            a, b = (rng["startIndex"] - 1) * 2, (rng["endIndex"] - 1) * 2
+            ins = body["requests"][1]["insertText"]["text"] if len(body["requests"]) > 1 else ""
+            self.text[m.group(1)] = (units[:a].decode("utf-16-le") + ins + units[b:].decode("utf-16-le"))
+            return ok({"replies": [{}, {}]})
         if m:
             req = body["requests"][0]["replaceAllText"]
             find, repl = req["containsText"]["text"], req["replaceText"]

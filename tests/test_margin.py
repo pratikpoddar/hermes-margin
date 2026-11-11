@@ -303,3 +303,38 @@ def test_cli_argparse_tree(plugin_ctx, capsys):
     assert handler(parser.parse_args(["list"])) == 0
     assert DOC_ID in capsys.readouterr().out
     assert plugin_ctx.commands["margin"]("status").startswith("Margin: 1 watched file")
+
+
+async def test_apply_multi_paragraph_in_docs_uses_index_range(adapter, google):
+    google.text[DOC_ID] = "Title 🚀\nRoll it thin.\nUse a bottle.\nBake 10 min.\n"
+    await _baseline(adapter)
+    c = google.add_comment("@hermes merge these", quoted="Roll it thin.\nUse a bottle.")
+    await adapter.poll_once()
+    await adapter.send(DOC_ID, "```replace\nNo rolling pin? Roll it thin with a bottle.\n```",
+                       metadata={"thread_id": c["id"]})
+    google.add_reply(c, "apply")
+    await adapter.poll_once()
+    assert google.text[DOC_ID] == "Title 🚀\nNo rolling pin? Roll it thin with a bottle.\nBake 10 min.\n"
+    batch = [call for call in google.calls if ":batchUpdate" in call[1]][0]
+    assert batch[2]["requests"][0]["deleteContentRange"]["range"] == {"startIndex": 10, "endIndex": 37}
+    assert "Applied." in google.bot_replies(c)[-1]["content"]
+
+
+async def test_apply_multi_paragraph_refuses_when_ambiguous(adapter, google):
+    google.text[DOC_ID] = "A\nB\nA\nB\n"
+    await _baseline(adapter)
+    c = google.add_comment("@hermes reword", quoted="A\nB")
+    await adapter.poll_once()
+    await adapter.send(DOC_ID, "```replace\nC\n```", metadata={"thread_id": c["id"]})
+    google.add_reply(c, "apply")
+    await adapter.poll_once()
+    assert google.text[DOC_ID] == "A\nB\nA\nB\n"
+    assert "appears 2 times" in google.bot_replies(c)[-1]["content"]
+
+
+def test_find_unique_range_counts_utf16_units():
+    from margin import logic as lg
+    doc = {"body": {"content": [{"paragraph": {"elements": [
+        {"startIndex": 1, "textRun": {"content": "😀ab\n"}}]}}, {"paragraph": {"elements": [
+        {"startIndex": 6, "textRun": {"content": "cd\u000bef\n"}}]}}]}}
+    assert lg.find_unique_range(doc, "b\ncd\nef") == (1, (4, 11))
