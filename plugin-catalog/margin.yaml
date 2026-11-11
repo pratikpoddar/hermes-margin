@@ -1,7 +1,6 @@
-# DRAFT, not submitted. Replace OWNER and the sha placeholder before opening the catalog PR.
 name: margin
 repo: https://github.com/pratikpoddar/hermes-margin
-sha: "REPLACE_WITH_FULL_40_CHAR_COMMIT_SHA"  # placeholder: the pinned release commit
+sha: fac55f75a49eb171b3213f8a6bdc16f260d5d751
 version: "0.1.0"
 requires_hermes: ">=0.22.7"
 title: Margin
@@ -10,6 +9,7 @@ maintainer: pratikpoddar
 tier: community
 category: platform
 docs_url: https://github.com/pratikpoddar/hermes-margin#readme
+readme: true
 platforms: []
 known_issues:
   - "Needs the user's own Google Cloud OAuth client (Desktop app) with the Drive, Docs and Slides APIs enabled; sign in once with hermes auth add margin:google."
