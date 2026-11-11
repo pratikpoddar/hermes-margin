@@ -1,6 +1,6 @@
 name: margin
 repo: https://github.com/pratikpoddar/hermes-margin
-sha: d57bc02a2b409c5583d9226fe2ee7ff037074277
+sha: 29a84672f49fdf295e6a27af1bbcd27a14e0c47a
 version: "0.1.0"
 requires_hermes: ">=0.22.7"
 title: Margin
