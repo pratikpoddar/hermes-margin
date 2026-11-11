@@ -33,3 +33,14 @@ async def test_real_handle_message_routes_reply_into_thread(adapter, google):
     assert "people like it" in bot[0]["content"]
     assert seen["key"].endswith(f"margin:group:{DOC_ID}:{c['id']}")
     assert "people likes it" in seen["text"]
+
+
+async def test_gateway_notices_stay_out_of_the_document(adapter, google):
+    """Setup notices like "no home channel" must never be posted as comment replies."""
+    assert adapter.config.extra.get("notice_delivery") == "private"
+    await adapter.poll_once()
+    c = google.add_comment("@hermes hi", quoted="people likes it")
+    before = len(google.find_comment(c["id"]).get("replies", []))
+    result = await adapter.send_private_notice(f"{DOC_ID}", "someone", "No home channel is set")
+    assert result.success
+    assert len(google.find_comment(c["id"]).get("replies", [])) == before

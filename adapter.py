@@ -72,6 +72,10 @@ class MarginAdapter(BasePlatformAdapter):
 
     def __init__(self, config: PlatformConfig, *, state: Any = None, client: Optional[GoogleClient] = None):
         super().__init__(config, Platform(PLATFORM_NAME))
+        # Gateway setup notices ("no home channel", etc.) are chat-app concepts. Route them to the
+        # private path, which Margin keeps in the log, so they never land in a document's comments.
+        if isinstance(getattr(config, "extra", None), dict):
+            config.extra.setdefault("notice_delivery", "private")
         extra = config.extra if isinstance(config.extra, dict) else {}
         if not isinstance(config.extra, dict):
             config.extra = extra
@@ -407,6 +411,14 @@ class MarginAdapter(BasePlatformAdapter):
         if reply_to and ":" in str(reply_to):
             return str(reply_to).split(":", 1)[0]
         return None
+
+    async def send_private_notice(self, chat_id: str, user_id: Optional[str], content: str,
+                                  reply_to: Optional[str] = None,
+                                  metadata: Optional[dict[str, Any]] = None) -> SendResult:
+        """Comment threads are shared with every collaborator and have no private channel, so
+        operational notices go to the gateway log instead of the document."""
+        logger.info("Margin: notice kept out of %s: %s", chat_id, (content or "")[:200])
+        return SendResult(success=True)
 
     async def send(self, chat_id: str, content: str, reply_to: Optional[str] = None,
                    metadata: Optional[dict[str, Any]] = None) -> SendResult:
