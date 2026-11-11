@@ -1,0 +1,69 @@
+name: margin
+label: Margin (Google Docs comments)
+# kind is deliberately "standalone" (it still registers a gateway platform via ctx.register_platform):
+# Hermes treats every requires_env name of a `kind: platform` manifest as a Hermes-owned platform
+# variable, and the oauth: block refuses Hermes-owned variables as client_id_env/client_secret_env.
+kind: standalone
+version: 0.1.0
+manifest_version: 2
+requires_hermes: ">=0.22.7"
+description: >
+  Margin turns Google Docs, Slides and Sheets comment threads into Hermes chats. Highlight text,
+  comment "@hermes <request>", and Hermes answers in the thread with the whole document and the
+  highlighted text as context. Follow-ups in the thread continue the same session, and replying
+  "apply" puts Hermes's proposed wording into the Doc (or Slides deck).
+author: Tinkerer (Pratik Poddar)
+license: MIT
+homepage: https://github.com/OWNER/hermes-margin
+tags: [gateway, google-docs, google-slides, google-sheets, comments, writing]
+provides_tools: []
+provides_hooks: []
+requires_env:
+  - name: MARGIN_GOOGLE_CLIENT_ID
+    description: "Client ID of your own Google Cloud OAuth client (type: Desktop app)"
+    prompt: "Google OAuth client ID"
+    url: "https://console.cloud.google.com/apis/credentials"
+    password: false
+  - name: MARGIN_GOOGLE_CLIENT_SECRET
+    description: "Client secret of the same Google Cloud OAuth client"
+    prompt: "Google OAuth client secret"
+    url: "https://console.cloud.google.com/apis/credentials"
+    secret: true
+    password: true
+optional_env:
+  - name: MARGIN_WATCH_FILES
+    description: "Comma-separated Google Docs/Slides/Sheets URLs or file ids to watch (added to /margin watch)"
+    prompt: "Files to watch (or empty)"
+    password: false
+  - name: MARGIN_TRIGGER
+    description: "Mention that opens a thread (default: @hermes)"
+    prompt: "Trigger word"
+    password: false
+  - name: MARGIN_POLL_INTERVAL
+    description: "Seconds between Drive comment polls (default: 10, minimum 2)"
+    prompt: "Poll interval seconds"
+    password: false
+  - name: MARGIN_MAX_DOC_CHARS
+    description: "Maximum characters of document text sent with the first turn (default: 60000)"
+    prompt: "Max document characters"
+    password: false
+  - name: MARGIN_ALLOWED_USERS
+    description: "Other commenters (email or Drive permission id) allowed to trigger Hermes; by default only the signed-in Google account can"
+    prompt: "Allowed commenters (comma-separated)"
+    password: false
+  - name: MARGIN_ALLOW_ALL_USERS
+    description: "Let anyone who can comment on a watched file drive the agent (true/false, default false)"
+    prompt: "Allow all commenters? (true/false)"
+    password: false
+oauth:
+  - id: google
+    authorize_url: https://accounts.google.com/o/oauth2/v2/auth
+    token_url: https://oauth2.googleapis.com/token
+    scopes:
+      - https://www.googleapis.com/auth/drive
+      - https://www.googleapis.com/auth/documents
+      - https://www.googleapis.com/auth/presentations
+    client_id_env: MARGIN_GOOGLE_CLIENT_ID
+    client_secret_env: MARGIN_GOOGLE_CLIENT_SECRET
+    hosts: [www.googleapis.com, docs.googleapis.com, slides.googleapis.com]
+    authorize_params: {access_type: offline, prompt: consent}
