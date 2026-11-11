@@ -108,10 +108,16 @@ def extract_proposal(content: str) -> Optional[str]:
     return proposal if proposal.strip() else None
 
 
+_APPLY_HINT_RE = re.compile(r'^[ \t]*(?:reply|type|say)\b[^\n]*["\u201c\u2018\'`]?apply\b[^\n]*\n?',
+                            re.IGNORECASE | re.MULTILINE)
+
+
 def render_reply(content: str, *, proposal: Optional[str], can_apply: bool) -> str:
     """Turn the agent's markdown answer into plain comment text with the Margin marker."""
     text = content or ""
     if proposal is not None:
+        # The model often adds its own "Reply apply…" line; Margin adds the canonical one.
+        text = _APPLY_HINT_RE.sub("", text)
         replacement_block = f"Proposed replacement:\n“{proposal}”"
         if can_apply:
             replacement_block += "\n\nReply \"apply\" in this thread to put it into the document."

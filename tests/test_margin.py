@@ -338,3 +338,10 @@ def test_find_unique_range_counts_utf16_units():
         {"startIndex": 1, "textRun": {"content": "😀ab\n"}}]}}, {"paragraph": {"elements": [
         {"startIndex": 6, "textRun": {"content": "cd\u000bef\n"}}]}}]}}
     assert lg.find_unique_range(doc, "b\ncd\nef") == (1, (4, 11))
+
+
+def test_render_reply_drops_models_own_apply_hint():
+    from margin import logic
+    content = "Here you go:\n```replace\nMilestones\n```\nReply \"apply\" to put it into the document."
+    out = logic.render_reply(content, proposal="Milestones", can_apply=True)
+    assert out.lower().count("apply") == 1, out
